@@ -5,12 +5,12 @@ import { useTheme } from '@mui/material/styles';
 import { startAgent, runAgent, getRunStatus, getRunOutput } from '../components/DashboardService';
 import { startAndRunAgent } from '../components/AgentService';
 
-import { readAgents, writeAgents, updateAgent, getAgentByIndividual } from '../components/LocalAgentManager'; // Import the local agent management functions
+import { readAgents, updateAgent, getAgentByIndividual, addRunOutput } from '../components/LocalAgentManager'; // Import the local agent management functions
 
 function HomePage() {
   const theme = useTheme();
   const [selectedIndividual, setSelectedIndividual] = useState('');
-  const [agentId, setAgentId] = useState(null); 
+  const [agentId, setAgentId] = useState(null);
   const [runId, setRunId] = useState(null);
 
   const handleChange = (event) => {
@@ -20,6 +20,27 @@ function HomePage() {
       setAgentId(existingAgent.agentId);
     } else {
       setAgentId(null);
+    }
+  };
+
+  const handleCheckRunStatus = async () => {
+    try {
+      // Assuming agentId is the ID of the agent you want to check
+      const statusFilter = "RUNNING"; // You can change this to the status you want to filter by
+      const runStatus = await getRunStatus(agentId, statusFilter);
+
+      if (runStatus.status === "COMPLETED") {
+        // If the run is completed, you can fetch the output
+        const runOutput = await getRunOutput([runStatus.run_id]);
+        addRunOutput(agentId, runStatus.run_id, runOutput);
+        console.log('Run output:', runOutput);
+        // Do something with the run output, such as saving it or displaying it to the user
+      } else {
+        console.log('Run is not yet completed:', runStatus.status);
+        // Handle other statuses as needed
+      }
+    } catch (error) {
+      console.error('Error checking run status:', error);
     }
   };
 
@@ -71,6 +92,9 @@ function HomePage() {
       </FormControl>
       <Button variant="contained" color="primary" onClick={handleStartAgent}>
         Start Agent
+      </Button>
+      <Button variant="contained" color="secondary" onClick={handleCheckRunStatus} style={{ marginLeft: theme.spacing(2) }}>
+        Check Run Status
       </Button>
     </Container>
   );

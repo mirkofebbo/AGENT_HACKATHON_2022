@@ -25,3 +25,15 @@ export const getAgentByIndividual = (individual) => {
   const agents = getAgents();
   return agents.find((agent) => agent.individual === individual);
 };
+
+export const addRunOutput = (agentId, runId, output) => {
+  const agents = getAgents();
+  const updatedAgents = agents.map((agent) => {
+    if (agent.agentId === agentId) {
+      const runOutput = { runId, output };
+      return { ...agent, runOutputs: [...(agent.runOutputs || []), runOutput] };
+    }
+    return agent;
+  });
+  saveAgent(updatedAgents);
+};

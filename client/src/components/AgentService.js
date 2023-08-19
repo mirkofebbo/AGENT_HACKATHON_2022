@@ -13,9 +13,10 @@ export async function startAndRunAgent(selectedIndividual, agentId = null) {
         "instruction": [
             `Search online for corporations affiliated with ${selectedIndividual}.`,
             `Compile the information into a structured format with the following schema: class 'CorporateAffiliations', properties including 'individualName' (string), 'corporations' (string array), and 'description' (string).`,
-            `Save the structured information in the database following the provided schema.`,
+            `Save the structured information locally following the provided schema.`,
             "Return the confirmation of the saved data as the final response.",
         ],
+        
         "tools": [
             {
                 "name": "Searx Toolkit",
