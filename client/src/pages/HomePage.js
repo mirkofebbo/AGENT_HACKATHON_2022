@@ -8,6 +8,7 @@ import { startAndRunAgent } from '../components/AgentService';
 function HomePage() {
   const theme = useTheme();
   const [selectedIndividual, setSelectedIndividual] = useState('');
+  const [agentId, setAgentId] = useState(null); 
 
   const handleChange = (event) => {
     setSelectedIndividual(event.target.value);
@@ -17,7 +18,8 @@ function HomePage() {
 
 
     try {
-    const runResult = await startAndRunAgent(selectedIndividual);  
+    const runResult = await startAndRunAgent(selectedIndividual, agentId);  
+    setAgentId(runResult.agentId);
     console.log('Agent started:', runResult);
 
     } catch (error) {

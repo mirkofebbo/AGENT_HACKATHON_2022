@@ -15,6 +15,17 @@ export const startAgent = async (agentData) => {
     }
 };
 
+export const updateAgent = async (agentId, agentData) => {
+    try {
+        const url = `${apiConfig.baseURL}/agent/${agentId}`;
+        const response = await axios.put(url, agentData, { headers: apiConfig.headers });
+        return response.data;
+    } catch (error) {
+        console.error('Error updating agent:', error);
+        throw error;
+    }
+};
+
 export const runAgent = async (agentId) => {
     try {
         const url = `${apiConfig.baseURL}${agentAPI.runAgent.replace('{agent_id}', agentId)}`;
