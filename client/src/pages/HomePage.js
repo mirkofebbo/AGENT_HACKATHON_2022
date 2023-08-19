@@ -2,16 +2,59 @@ import React, { useState } from 'react';
 import { Container, Typography, Button, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-import { startAgent } from '../components/DashboardService';
+import { startAgent, runAgent } from '../components/DashboardService';
 
 const handleStartAgent = async () => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  now.setSeconds(now.getSeconds() + 10);
+
+  const startTime = now.toISOString().slice(0, 19).replace('T', ' ');
+  console.log(startTime)
+  const agentData = {
+    "name": "Corporate Affiliations",
+    "description": "Search online for list of corporations an individual is affiliated with or own.",
+    "goal": ["Create a list containing Bill Gates corporation he is affiliated with or own."],
+    "agent_workflow": "Goal Based Workflow",
+    "constraints": [
+      "~4000 word limit for short term memory.",
+      "Your short term memory is short, so immediately save important information to files.",
+      "If you are unsure how you previously did something or want to recall past events, thinking about similar events will help you remember.",
+      "No user assistance",
+      "Exclusively use the commands listed in double quotes e.g. \"command name\""
+    ],
+    "instruction": ["Create a json file for the list with the corporation name and short description"],
+    "tools": [
+      {
+        "name": "Searx Toolkit",
+        "tools": ["SearxSearch"]
+      },
+      {
+        "name": "File Toolkit",
+        "tools": ["Read File", "Write File"]
+      },
+    ],
+    "iteration_interval": 500,
+    "model": "gpt-3.5-turbo",
+    "max_iterations": 10,
+    "schedule": null
+  }
+
   try {
-    const result = await startAgent();
+    const result = await startAgent(agentData);
     console.log('Agent started:', result);
+
+    // Extract the agent ID from the result (adjust as needed based on the response structure)
+    const agentId = result.agent_id;
+
+    // Call runAgent with the agent ID
+    const runResult = await runAgent(agentId);
+    console.log('Agent run:', runResult);
   } catch (error) {
     console.error('Error starting agent:', error);
   }
 };
+
 
 function HomePage() {
   const theme = useTheme();
