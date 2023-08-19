@@ -4,6 +4,11 @@ import { useTheme } from '@mui/material/styles';
 
 import { startAgent, runAgent } from '../components/DashboardService';
 
+import WeaviateService from '../components/WeaviateApi';
+WeaviateService.get('Agent', 'agentId name runId result');
+WeaviateService.getSchema();
+
+console.log(WeaviateService.getSchema());
 const handleStartAgent = async () => {
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -44,12 +49,11 @@ const handleStartAgent = async () => {
     const result = await startAgent(agentData);
     console.log('Agent started:', result);
 
-    // Extract the agent ID from the result (adjust as needed based on the response structure)
+    // Extract the agent ID from the result
     const agentId = result.agent_id;
 
     // Call runAgent with the agent ID
     const runResult = await runAgent(agentId);
-    console.log('Agent run:', runResult);
   } catch (error) {
     console.error('Error starting agent:', error);
   }

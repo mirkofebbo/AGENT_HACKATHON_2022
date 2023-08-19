@@ -11,6 +11,5 @@ export const apiConfig = {
     startAgent: '/agent',
     resumeAgent: '/agent/{agent_id}/resume', 
     runAgent: '/agent/{agent_id}/run', 
-
   };
   
