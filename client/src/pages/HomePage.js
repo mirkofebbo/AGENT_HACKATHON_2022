@@ -5,23 +5,33 @@ import { useTheme } from '@mui/material/styles';
 import { startAgent, runAgent, getRunStatus, getRunOutput } from '../components/DashboardService';
 import { startAndRunAgent } from '../components/AgentService';
 
+import { readAgents, writeAgents, updateAgent, getAgentByIndividual } from '../components/LocalAgentManager'; // Import the local agent management functions
+
 function HomePage() {
   const theme = useTheme();
   const [selectedIndividual, setSelectedIndividual] = useState('');
   const [agentId, setAgentId] = useState(null); 
+  const [runId, setRunId] = useState(null);
 
   const handleChange = (event) => {
     setSelectedIndividual(event.target.value);
+    const existingAgent = getAgentByIndividual(event.target.value);
+    if (existingAgent) {
+      setAgentId(existingAgent.agentId);
+    } else {
+      setAgentId(null);
+    }
   };
 
   const handleStartAgent = async () => {
-
-
     try {
-    const runResult = await startAndRunAgent(selectedIndividual, agentId);  
-    setAgentId(runResult.agentId);
-    console.log('Agent started:', runResult);
+      const runResult = await startAndRunAgent(selectedIndividual, agentId);
+      setAgentId(runResult.agentId);
+      setRunId(runResult.runResult.run_id);
+      console.log('Agent started:', runResult);
 
+      // Update the local agent information
+      updateAgent(runResult.agentId, "Corporate Affiliations", selectedIndividual, runResult.runResult.run_id);
     } catch (error) {
       console.error('Error starting agent:', error);
     }
