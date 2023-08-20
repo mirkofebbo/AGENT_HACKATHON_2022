@@ -1,49 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Typography, Button, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 import { startAgent, runAgent, getRunStatus, getRunOutput } from '../components/DashboardService';
 import { startAndRunAgent } from '../components/AgentService';
 
-import { readAgents, updateAgent, getAgentByIndividual, addRunOutput } from '../components/LocalAgentManager'; // Import the local agent management functions
 
 function HomePage() {
+
   const theme = useTheme();
+
   const [selectedIndividual, setSelectedIndividual] = useState('');
   const [agentId, setAgentId] = useState(null);
   const [runId, setRunId] = useState(null);
+  const [isRunning, setIsRunning] = useState(false);
+
 
   const handleChange = (event) => {
     setSelectedIndividual(event.target.value);
-    const existingAgent = getAgentByIndividual(event.target.value);
-    if (existingAgent) {
-      setAgentId(existingAgent.agentId);
-    } else {
-      updateAgent(agentId, "Corporate Affiliations", event.target.value, runId);
-      setAgentId(agentId);
-    }
+
+    setAgentId(agentId);
+
   };
 
-  const handleCheckRunStatus = async () => {
-    try {
-      // Assuming agentId is the ID of the agent you want to check
-      const statusFilter = "RUNNING"; // You can change this to the status you want to filter by
-      const runStatus = await getRunStatus(agentId, statusFilter);
 
-      if (runStatus.status === "COMPLETED") {
-        // If the run is completed, you can fetch the output
-        const runOutput = await getRunOutput([runStatus.run_id]);
-        addRunOutput(agentId, runStatus.run_id, runOutput);
-        console.log('Run output:', runOutput);
-        // Do something with the run output, such as saving it or displaying it to the user
-      } else {
-        console.log('Run is not yet completed:', runStatus.status);
-        // Handle other statuses as needed
+  useEffect(() => {
+    let intervalId;
+
+    // Function to check the run status
+    const checkRunStatus = async () => {
+      try {
+        const statusFilter = "RUNNING";
+        const runStatus = await getRunStatus(agentId, statusFilter);
+        console.log('Run status:', runStatus);
+        if (runStatus.status !== "RUNNING") {
+          // If the run is completed, you can fetch the output
+          const runOutput = await getRunOutput([runStatus.run_id]);
+          console.log('Run output:', runOutput);
+          // Stop checking the status
+          clearInterval(intervalId);
+          setIsRunning(false);
+        } else {
+          console.log('Run is not yet completed:', runStatus.status);
+        }
+      } catch (error) {
+        console.error('Error checking run status:', error);
       }
-    } catch (error) {
-      console.error('Error checking run status:', error);
+    };
+
+    // If the agent is running, set up an interval to check the status
+    if (isRunning) {
+      intervalId = setInterval(checkRunStatus, 5000); // Check every 5 seconds
     }
-  };
+
+    // Clean up the interval when the component unmounts or the agent stops running
+    return () => clearInterval(intervalId);
+  }, [agentId, isRunning]); // Re-run the effect if agentId or isRunning changes
 
   const handleStartAgent = async () => {
     try {
@@ -52,8 +64,6 @@ function HomePage() {
       setRunId(runResult.runResult.run_id);
       console.log('Agent started:', runResult);
 
-      // Update the local agent information
-      updateAgent(runResult.agentId, "Corporate Affiliations", selectedIndividual, runResult.runResult.run_id);
     } catch (error) {
       console.error('Error starting agent:', error);
     }
@@ -84,6 +94,7 @@ function HomePage() {
           onChange={handleChange}
           label="Select an Individual"
         >
+          <MenuItem value="">Select an Individual</MenuItem> {/* Default option */}
           {individuals.map((individual) => (
             <MenuItem key={individual.value} value={individual.value}>
               {individual.name}
@@ -91,13 +102,16 @@ function HomePage() {
           ))}
         </Select>
       </FormControl>
-      <Button variant="contained" color="primary" onClick={handleStartAgent}>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleStartAgent}
+        disabled={!selectedIndividual || selectedIndividual === ''} // Disable if no individual selected
+      >
         Start Agent
       </Button>
-      <Button variant="contained" color="secondary" onClick={handleCheckRunStatus} style={{ marginLeft: theme.spacing(2) }}>
-        Check Run Status
-      </Button>
     </Container>
+
   );
 }
 

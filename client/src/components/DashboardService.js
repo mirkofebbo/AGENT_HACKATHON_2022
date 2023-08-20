@@ -43,7 +43,7 @@ export const resumeAgent = async (agentId, runIds) => {
         const url = `${apiConfig.baseURL}${agentAPI.resumeAgent.replace('{agent_id}', agentId)}`;
         const data = { run_ids: runIds };
         const response = await axios.post(url, data, { headers: apiConfig.headers });
-        return response.data;
+        return response.data[0];
     } catch (error) {
         console.error('Error resuming agent:', error);
         throw error;
@@ -56,7 +56,7 @@ export const getRunStatus = async (agentId, statusFilter) => {
         const url = `${apiConfig.baseURL}/agent/${agentId}/run-status`;
         const data = { run_status_filter: statusFilter };
         const response = await axios.post(url, data, { headers: apiConfig.headers });
-        return response.data;
+        return response.data[0].status;
     } catch (error) {
         console.error('Error getting run status:', error);
         throw error;
