@@ -19,7 +19,8 @@ function HomePage() {
     if (existingAgent) {
       setAgentId(existingAgent.agentId);
     } else {
-      setAgentId(null);
+      updateAgent(agentId, "Corporate Affiliations", event.target.value, runId);
+      setAgentId(agentId);
     }
   };
 
